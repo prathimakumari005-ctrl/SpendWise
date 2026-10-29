@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Reports | SpendWise</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+    <h1>SpendWise</h1>
+    <p>Your monthly financial report</p>
+</header>
+
+<main class="container">
+
+    <section class="welcome">
+        <h2>{{ name }}'s Monthly Report</h2>
+        <a href="{{ url_for('home') }}" class="back-link">
+            ← Back to Dashboard
+        </a>
+    </section>
+
+    <section class="report-filter">
+        <form method="GET" action="{{ url_for('reports') }}">
+            <label for="month">Choose month</label>
+            <input type="month" id="month" name="month"
+                   value="{{ month }}" required>
+            <button type="submit">Generate Report</button>
+        </form>
+    </section>
+
+    <section class="summary">
+        <div class="card income">
+            <h3>Monthly Income</h3>
+            <p>₹{{ "%.2f"|format(total_income) }}</p>
+        </div>
+
+        <div class="card expenses">
+            <h3>Monthly Expenses</h3>
+            <p>₹{{ "%.2f"|format(total_expenses) }}</p>
+        </div>
+
+        <div class="card balance">
+            <h3>Net Balance</h3>
+            <p>₹{{ "%.2f"|format(balance) }}</p>
+        </div>
+    </section>
+
+    <section class="transactions">
+        <h2>Expenses by Category</h2>
+
+        {% if categories %}
+            {% for item in categories %}
+                <div class="transaction-item">
+                    <strong>{{ item['category'] }}</strong>
+                    <p>₹{{ "%.2f"|format(item['total']) }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No expenses recorded for this month.</p>
+        {% endif %}
+    </section>
+
+    <section class="transactions">
+        <h2>Transactions for {{ month }}</h2>
+
+        {% if transactions %}
+            {% for transaction in transactions %}
+                <div class="transaction-item">
+                    <strong>{{ transaction['title'] }}</strong>
+                    <p>
+                        {{ transaction['category'] }} ·
+                        {{ transaction['type'] }}
+                    </p>
+                    <p>{{ transaction['created_at'] }}</p>
+                    <p>
+                        {% if transaction['type'] == 'Income' %}+{% else %}-{% endif %}
+                        ₹{{ "%.2f"|format(transaction['amount']) }}
+                    </p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No transactions found for this month.</p>
+        {% endif %}
+    </section>
+
+</main>
+
+<footer>
+    <p>&copy; 2026 SpendWise. Manage your money wisely.</p>
+</footer>
+
+</body>
+</html>
+

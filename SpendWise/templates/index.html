@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise Dashboard</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+    <h1>SpendWise</h1>
+    <p>Track your money. Build your future.</p>
+</header>
+
+<main class="container">
+
+    <section class="welcome">
+        <h2>Welcome, {{ name }}!</h2>
+        <p>Manage your money in one place.</p>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </section>
+
+    {% for message in get_flashed_messages() %}
+        <p class="notice">{{ message }}</p>
+    {% endfor %}
+
+    <section class="summary">
+        <div class="card balance">
+            <h3>Total Balance</h3>
+            <p>₹{{ "%.2f"|format(balance) }}</p>
+        </div>
+
+        <div class="card income">
+            <h3>Total Income</h3>
+            <p>₹{{ "%.2f"|format(total_income) }}</p>
+        </div>
+
+        <div class="card expenses">
+            <h3>Total Expenses</h3>
+            <p>₹{{ "%.2f"|format(total_expenses) }}</p>
+        </div>
+
+        <div class="card savings">
+            <h3>Total Savings</h3>
+            <p>₹{{ "%.2f"|format(total_savings) }}</p>
+            <small>Income minus expenses</small>
+</div>
+
+<div class="card goal-savings">
+    <h3>Saved Toward Goals</h3>
+    <p>₹{{ "%.2f"|format(total_goal_savings) }}</p>
+    <small>Allocated to your goals</small>
+</div>
+        </div>
+    </section>
+
+    <section class="actions">
+        <h2>Quick Actions</h2>
+
+        <a href="{{ url_for('add_transaction', transaction_type='income') }}">
+            <button type="button">+ Add Income</button>
+        </a>
+
+        <a href="{{ url_for('add_transaction', transaction_type='expense') }}">
+            <button type="button">+ Add Expense</button>
+        </a>
+
+        <a href="{{ url_for('reports') }}">
+            <button type="button">View Reports</button>
+        </a>
+<a href="{{ url_for('goals') }}">
+    <button type="button">My Savings Goals</button>
+</a>
+    </section>
+
+    <section class="transactions">
+        <h2>Transaction History</h2>
+
+        {% if transactions %}
+            {% for transaction in transactions %}
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <strong>{{ transaction['title'] }}</strong>
+
+                        <p>{{ transaction['category'] }} ·
+                           {{ transaction['type'] }}</p>
+
+                        <p>
+                            {{ transaction['created_at'] }}
+                        </p>
+
+                        <p class="{% if transaction['type'] == 'Income' %}positive{% else %}negative{% endif %}">
+                            {% if transaction['type'] == 'Income' %}+{% else %}-{% endif %}
+                            ₹{{ "%.2f"|format(transaction['amount']) }}
+                        </p>
+                    </div>
+
+                    <div class="transaction-buttons">
+                        <a href="{{ url_for('edit_transaction', transaction_id=transaction['id']) }}">
+                            <button type="button" class="edit-btn">Edit</button>
+                        </a>
+
+                        <form method="POST"
+                              action="{{ url_for('delete_transaction', transaction_id=transaction['id']) }}"
+                              onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                            <button type="submit" class="delete-btn">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">
+                No transactions yet. Add your first transaction!
+            </p>
+        {% endif %}
+    </section>
+
+</main>
+
+<footer>
+    <p>&copy; 2026 SpendWise. Manage your money wisely.</p>
+</footer>
+
+</body>
+</html>

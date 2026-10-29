@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings Goals | SpendWise</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+    <h1>SpendWise</h1>
+    <p>Save today for tomorrow.</p>
+</header>
+
+<main class="container">
+
+    <section class="welcome">
+        <h2>Welcome, {{ name }}!</h2>
+        <a href="{{ url_for('home') }}" class="back-link">
+            ← Back to Dashboard
+        </a>
+    </section>
+
+    {% for message in get_flashed_messages() %}
+        <p class="notice">{{ message }}</p>
+    {% endfor %}
+
+    <section class="form-card">
+        <h2>Create a Savings Goal</h2>
+
+        <form method="POST" action="{{ url_for('goals') }}">
+            <label for="title">Goal Name</label>
+            <input type="text" id="title" name="title"
+                   placeholder="Example: Buy a laptop" required>
+
+            <label for="target_amount">Target Amount (₹)</label>
+            <input type="number" id="target_amount"
+                   name="target_amount" min="0.01" step="0.01"
+                   placeholder="Example: 30000" required>
+
+            <button type="submit">Create Goal</button>
+        </form>
+    </section>
+
+    <section class="transactions">
+        <h2>My Savings Goals</h2>
+
+        {% if goals %}
+            {% for goal in goals %}
+                {% set percentage = [
+                    (goal['saved_amount'] / goal['target_amount'] * 100),
+                    100
+                ] | min %}
+
+                <div class="goal-card">
+                    <h3>{{ goal['title'] }}</h3>
+
+                    <p>
+                        Saved: ₹{{ "%.2f"|format(goal['saved_amount']) }}
+                    </p>
+
+                    <p>
+                        Target: ₹{{ "%.2f"|format(goal['target_amount']) }}
+                    </p>
+
+                    <p>
+                        Remaining: ₹{{ "%.2f"|format(goal['target_amount'] - goal['saved_amount']) }}
+                    </p>
+
+                    <div class="progress-track">
+                        <div class="progress-fill"
+                             style="width: {{ percentage }}%;">
+                        </div>
+                    </div>
+
+                    <p class="progress-label">
+                        {{ "%.1f"|format(percentage) }}% completed
+                    </p>
+
+                    {% if goal['saved_amount'] < goal['target_amount'] %}
+                        <form method="POST"
+                              action="{{ url_for('contribute_to_goal', goal_id=goal['id']) }}">
+
+                            <label for="amount-{{ goal['id'] }}">
+                                Add to savings (₹)
+                            </label>
+
+                            <input type="number"
+                                   id="amount-{{ goal['id'] }}"
+                                   name="amount" min="0.01"
+                                   step="0.01"
+                                   max="{{ goal['target_amount'] - goal['saved_amount'] }}"
+                                   placeholder="Enter amount" required>
+
+                            <button type="submit">Add Savings</button>
+                        </form>
+                    {% else %}
+                        <p class="goal-complete">
+                            Goal completed! 🎉
+                        </p>
+                    {% endif %}
+
+                    <hr>
+
+                    <h4>Edit Goal</h4>
+
+                    <form method="POST"
+                          action="{{ url_for('edit_goal', goal_id=goal['id']) }}">
+
+                        <label for="edit-title-{{ goal['id'] }}">
+                            Goal Name
+                        </label>
+
+                        <input type="text"
+                               id="edit-title-{{ goal['id'] }}"
+                               name="title"
+                               value="{{ goal['title'] }}" required>
+
+                        <label for="edit-target-{{ goal['id'] }}">
+                            Target Amount (₹)
+                        </label>
+
+                        <input type="number"
+                               id="edit-target-{{ goal['id'] }}"
+                               name="target_amount"
+                               min="{{ goal['saved_amount'] }}"
+                               step="0.01"
+                               value="{{ goal['target_amount'] }}"
+                               required>
+
+                        <button type="submit" class="edit-btn">
+                            Update Goal
+                        </button>
+                    </form>
+
+                    <form method="POST"
+                          action="{{ url_for('delete_goal', goal_id=goal['id']) }}"
+                          onsubmit="return confirm('Delete this savings goal?');">
+
+                        <button type="submit" class="delete-btn">
+                            Delete Goal
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty">
+                No savings goals yet. Create your first goal above!
+            </p>
+        {% endif %}
+    </section>
+
+</main>
+
+<footer>
+    <p>&copy; 2026 SpendWise. Manage your money wisely.</p>
+</footer>
+
+</body>
+</html>
